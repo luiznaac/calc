@@ -18,6 +18,13 @@
         "command": "test -z \"$(gofmt -l .)\" && go vet ./..."
       }
     },
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/backend",
+        "command": "go run ./cmd/calculator"
+      }
+    },
     "test": {
       "executor": "@nx-go/nx-go:test"
     }

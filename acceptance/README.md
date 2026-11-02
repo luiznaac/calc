@@ -18,16 +18,16 @@ runner builds the image through the `docker:build` Nx target, starts it through 
 the ledger. `ACCEPTANCE_SKIP_BUILD=1` reuses an existing `calc:acceptance` image for a fast
 development loop.
 
-| Flag                        | Meaning                                                   |
-| --------------------------- | --------------------------------------------------------- |
-| `--manifest <path>`         | Manifest to run (default `acceptance/manifest.json`).     |
-| `--expectations <path>`     | Sidecar to run (default `acceptance/expectations.json`).  |
-| `--runbook <path>`          | Runbook to boot (default `acceptance/runbook.md`).        |
-| `--out <dir>`               | Artifact directory; defaults to the scratch dir below.    |
-| `--vision` / `--no-vision`  | Vision on (default) or visual intents marked `deferred`.  |
-| `--only <id-prefix>`        | Run matching intents only; still boots and tears down.    |
+| Flag                       | Meaning                                                  |
+| -------------------------- | -------------------------------------------------------- |
+| `--manifest <path>`        | Manifest to run (default `acceptance/manifest.json`).    |
+| `--expectations <path>`    | Sidecar to run (default `acceptance/expectations.json`). |
+| `--runbook <path>`         | Runbook to boot (default `acceptance/runbook.md`).       |
+| `--out <dir>`              | Artifact directory; defaults to the scratch dir below.   |
+| `--vision` / `--no-vision` | Vision on (default) or visual intents marked `deferred`. |
+| `--only <id-prefix>`       | Run matching intents only; still boots and tears down.   |
 
-`ACCEPTANCE_RUN_ID` overrides the run id; otherwise it is `<git-sha>-<UTC>`.
+`ACCEPTANCE_RUN_ID` overrides the run id; otherwise it is `<short-sha>-<UTC>`.
 
 ## Artifacts
 
@@ -51,12 +51,12 @@ Repository additions are `results[].requests` (`count` plus observed `calls`) an
 
 ## Exit codes
 
-| Code | Meaning                                                        |
-| ---- | -------------------------------------------------------------- |
-| `0`  | Every intent passed or was deferred.                           |
-| `1`  | At least one intent failed.                                    |
-| `2`  | Fatal: boot, health gate, browser launch or exhausted vision.  |
-| `3`  | Configuration/schema error.                                    |
+| Code | Meaning                                                       |
+| ---- | ------------------------------------------------------------- |
+| `0`  | Every intent passed or was deferred.                          |
+| `1`  | At least one intent failed.                                   |
+| `2`  | Fatal: boot, health gate, browser launch or exhausted vision. |
+| `3`  | Configuration/schema error.                                   |
 
 The ledger is written even after a fatal error.
 
@@ -84,23 +84,24 @@ sent as JSON, a string is sent raw) and `action.body_repeat` (for the 1 MiB case
 4. `requests` shows the observed calculate calls; compare them with the sidecar expectation.
 5. A `deferred` result is a visual intent skipped by `--no-vision`; rerun without it.
 
-A failure files one labelled follow-up issue per failed or deferred intent. The runner never
-touches the issue tracker.
+The implementing agent files one labelled follow-up issue per failed or deferred intent. The runner
+never touches the issue tracker.
 
 ## Intent inventory
 
 - `ui-loads`: the container serves the SPA at the start URL. The shared v2 schema has no Container
   surface, so this is the Browser surface check that proves the nginx + Go container serves the SPA.
-- 22 HTTP intents: health, success, every reachable API error class (three request-shape variants
-  for `INVALID_JSON`), and the four non-events (`OPTIONS` with no CORS, trailing slash, lenient
-  unknown fields, tolerated charset).
+- 22 HTTP intents: health, success, every API error class except `INVALID_NUMBER` and
+  `INTERNAL_ERROR` (three request-shape variants for `INVALID_JSON`), and the four non-events
+  (`OPTIONS` with no CORS, trailing slash, lenient unknown fields, tolerated charset).
 - Eight transition-row groups (`row-initial`, `row-entry`, `row-awaiting`, `row-entry-right`,
   `row-computed-right`, `row-result`, `row-error`, `row-inflight`) with request counts and
   non-event assertions on every step.
 - Five geometry intents: the 20 bounding-box relations at 1280×900, 390×844, 844×390, 667×375
   and 568×320, with no page scroll.
 - Two vision intents: `visual-percent-worked` and `visual-percent-result`, against the committed
-  reference `reference/percent-worked.png`.
+  human reference `reference/percent-worked.png`.
 
-`INVALID_NUMBER` and `INTERNAL_ERROR` stay unit-only: the first is unreachable from valid JSON and
-the second needs fault injection.
+The manifest leaves `INVALID_NUMBER` out by decision, but the HTTP adapter can still reach it
+through a JSON number that overflows `float64` (for example `1e400`); it stays covered at the
+adapter/domain level. `INTERNAL_ERROR` needs fault injection and stays unit-only.

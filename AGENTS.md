@@ -12,10 +12,11 @@
 
 ## Acceptance
 
-- **Surface kinds**: HTTP (health, success, every reachable API error class and the non-events
-  through nginx), Browser (the SPA, the eight transition rows, the 20 keypad geometry relations
-  at five viewports, and the vision intents), and the container/runtime surface (single nginx
-  port 80, `/healthz` and `/api/*` reached through nginx, no direct API port).
+- **Surface kinds**: HTTP (health, success, every API error class except `INVALID_NUMBER` and
+  `INTERNAL_ERROR`, and the non-events through nginx), Browser (the SPA, the eight transition
+  rows, the 20 keypad geometry relations at five viewports, and the vision intents), and the
+  container/runtime surface (single nginx port 80, `/healthz` and `/api/*` reached through
+  nginx, no direct API port).
 - **Run story**: `pnpm acceptance` builds the image, boots it through
   [`acceptance/runbook.md`](./acceptance/runbook.md), runs
   [`acceptance/manifest.json`](./acceptance/manifest.json) with
