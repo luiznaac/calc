@@ -1,13 +1,18 @@
-.shell {
-  max-width: 940px;
-  margin: 0 auto;
-  padding: 2rem;
+.page {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: clamp(14px, 4vw, 56px);
 }
 
-.title {
-  font-size: 2rem;
+@media (max-width: 560px) {
+  .page {
+    padding: 0;
+  }
 }
 
-.note {
-  color: #6f685b;
+@media (max-height: 520px) and (orientation: landscape) {
+  .page {
+    padding: 8px;
+  }
 }
