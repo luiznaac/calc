@@ -550,3 +550,14 @@ describe("display formatting and float chaining", () => {
     expect(mainDisplay(state)).toBe("OVERFLOW");
   });
 });
+
+describe("tape history", () => {
+  it("keeps only the ten most recent completed calculations", () => {
+    const calculations = Array.from({ length: 11 }, (_, index) => `${index + 1}+1=`);
+    const tokens = calculations.flatMap((calculation) => [...calculation]);
+    const { state } = drive(tokens);
+    expect(state.tape).toHaveLength(10);
+    expect(state.tape[0]).toEqual({ expression: "2 + 1 =", result: "3" });
+    expect(state.tape.at(-1)).toEqual({ expression: "11 + 1 =", result: "12" });
+  });
+});

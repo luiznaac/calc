@@ -26,6 +26,8 @@ const LOCAL_OVERFLOW: Problem = {
   detail: "The result is outside the representable range.",
 };
 
+const TAPE_LIMIT = 10;
+
 export function initialState(): CalculatorState {
   return {
     entry: null,
@@ -138,7 +140,7 @@ function withRequest(
 }
 
 function withTape(state: CalculatorState, expression: string, value: number): TapeEntry[] {
-  return [...state.tape, { expression, result: formatNumber(value) }];
+  return [...state.tape, { expression, result: formatNumber(value) }].slice(-TAPE_LIMIT);
 }
 
 function withLocalError(state: CalculatorState, expression: string): CalculatorState {

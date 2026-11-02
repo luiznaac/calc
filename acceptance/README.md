@@ -36,7 +36,7 @@ Everything produced at run time is written under
 committed:
 
 ```text
-result.json                 ledger v2 plus the additive requests/assertions fields
+result.json                 ledger v2 plus the additive requests/presses/assertions fields
 <intent-id>-before.png      screenshot before a Browser intent's action
 <intent-id>-after.png       screenshot after a Browser intent's action
 trace.zip                   Playwright trace, written only on the first failure
@@ -46,8 +46,9 @@ The ledger keeps the shared v2 shape: `manifest_version`, `run_id`, `runbook`, `
 `boot`, per-intent `results` (`id`, `surface`, `verdict`, `evidence`, `error`, `duration_ms`,
 `assertions`, `console`, `network`, `artifacts`, `vision`, `action_performed`) and
 `summary` (`total`, `passed`, `failed`, `fatal`, `deferred`, `skipped`, `boot_duration_ms`).
-Repository additions are `results[].requests` (`count` plus observed `calls`) and the observed
-`assertions.geometry` / `assertions.no_scroll` values.
+Repository additions are `results[].requests` (`count` plus observed `calls`),
+`results[].presses` (the keys applied from the sidecar) and the observed `assertions.geometry` /
+`assertions.no_scroll` values.
 
 ## Exit codes
 
@@ -66,7 +67,8 @@ The ledger is written even after a fatal error.
 `intents`). Browser intents use the v2 locator/action/assertion vocabulary; HTTP intents use the
 free-form `anchor`/`expect`/`action` branch that v2 leaves unvalidated for non-Browser surfaces.
 `expectations.json` carries only what v2 cannot express, keyed by manifest intent id:
-`reset`, `requests` (count and ordered calls), `viewport`, `geometry` (relations and no-scroll),
+`reset`, `presses` (keys applied to the calculator root before the before-gate, Browser-only),
+`requests` (count and ordered calls), `viewport`, `geometry` (relations and no-scroll),
 `attributes` (`ariaBusy`), `hold` and `releaseHold`. Unknown ids and unknown keys are rejected.
 
 HTTP conventions: `anchor.method` + `anchor.path`; `expect.status`, `expect.content_type`,
@@ -99,6 +101,8 @@ never touches the issue tracker.
   non-event assertions on every step.
 - Five geometry intents: the 20 bounding-box relations at 1280×900, 390×844, 844×390, 667×375
   and 568×320, with no page scroll.
+- `tape-cap-1280x900`: applies 30 sqrt keys through the sidecar `presses`, then asserts exactly
+  10 tape rows and no page scroll, so the tape cannot stretch the calculator.
 - Two vision intents: `visual-percent-worked` and `visual-percent-result`, against the committed
   human reference `reference/percent-worked.png`.
 

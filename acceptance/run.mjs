@@ -79,6 +79,7 @@ function newResult(id, surface, assertions = {}) {
     console: { count: 0, errors: [] },
     network: { count: 0, failed: [] },
     requests: { count: 0, calls: [] },
+    presses: [],
     artifacts: {},
     vision: null,
     action_performed: false,
@@ -559,6 +560,17 @@ async function main() {
             );
           }
 
+          if (expectation.presses) {
+            const root = page.getByTestId("calculator-root");
+            for (const key of expectation.presses) {
+              await root.press(key);
+              result.presses.push(key);
+              if (!(await waitForIdle(page, timeout))) {
+                throw new Error(`calculator stayed busy after pressing ${JSON.stringify(key)}`);
+              }
+            }
+          }
+
           if (intent.action) {
             const beforeShot = join(outDir, `${intent.id}-before.png`);
             await page.screenshot({ path: beforeShot, fullPage: false });
@@ -679,8 +691,13 @@ async function main() {
             }
           }
 
+          const performed = intent.action
+            ? "before gate passed"
+            : result.presses.length > 0
+              ? `${result.presses.length} key press(es) applied`
+              : "static intent passed";
           result.verdict = "pass";
-          result.evidence = `${intent.action ? "before gate passed" : "static intent passed"}${
+          result.evidence = `${performed}${
             result.requests.count > 0 ? `, ${result.requests.count} request(s)` : ""
           }`;
         } catch (error) {
