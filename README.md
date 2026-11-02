@@ -1,5 +1,7 @@
 # calc
 
+[![codecov](https://codecov.io/gh/luiznaac/calc/branch/master/graph/badge.svg)](https://codecov.io/gh/luiznaac/calc)
+
 A full-stack calculator: a Go HTTP API and a React TypeScript single-page app, packaged as one
 nginx + Go container image. One JSON endpoint exposes eight operations — `add`, `subtract`,
 `multiply`, `divide`, `power`, `sqrt`, `negate` and `percent` — and the UI adds contextual percent
