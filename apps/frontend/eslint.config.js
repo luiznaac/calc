@@ -33,8 +33,10 @@ export default [
     rules: {
       ...jsxA11y.flatConfigs.recommended.rules,
       ...reactHooks.configs["recommended-latest"].rules,
-      // tsc --noEmit owns unused-symbol checks for TS; core no-unused-vars cannot see JSX/type usage.
+      // tsc --noEmit owns unused-symbol and undefined-name checks for TS; the
+      // Babel parser cannot scope type-only syntax for the core rules.
       "no-unused-vars": "off",
+      "no-undef": "off",
     },
   },
 ];
