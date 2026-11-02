@@ -1,7 +1,14 @@
 node_modules/
+.pnpm-store/
 .nx/
 dist/
 coverage/
+coverage.out
+*.coverprofile
+playwright-report/
+test-results/
+.vite/
+*.tsbuildinfo
 go.work
 go.work.sum
 .env

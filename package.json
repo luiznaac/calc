@@ -1,0 +1,17 @@
+{
+  "name": "calc",
+  "private": true,
+  "packageManager": "pnpm@12.16.1",
+  "scripts": {
+    "affected": "nx affected -t lint test build",
+    "build": "nx run-many -t build",
+    "graph": "nx graph",
+    "lint": "nx run-many -t lint",
+    "test": "nx run-many -t test"
+  },
+  "devDependencies": {
+    "@nx-go/nx-go": "24.0.0-beta.0",
+    "@nx/js": "24.0.3",
+    "nx": "24.0.3"
+  }
+}

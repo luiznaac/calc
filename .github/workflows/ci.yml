@@ -1,0 +1,261 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  NODE_VERSION: "22"
+  GO_PRIMARY: "1.27"
+  GOLANGCI_LINT_VERSION: "v2.15.0"
+
+jobs:
+  affected:
+    name: Setup and affected
+    runs-on: ubuntu-latest
+    env:
+      GOWORK: "off"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.16.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_PRIMARY }}
+          cache: false
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: go-${{ runner.os }}-${{ env.GO_PRIMARY }}-${{ hashFiles('apps/backend/go.mod', 'apps/backend/go.sum') }}
+          restore-keys: |
+            go-${{ runner.os }}-${{ env.GO_PRIMARY }}-
+      - uses: actions/cache@v4
+        with:
+          path: .nx/cache
+          key: nx-${{ runner.os }}-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            nx-${{ runner.os }}-${{ github.ref_name }}-
+            nx-${{ runner.os }}-master-
+            nx-${{ runner.os }}-
+      - run: pnpm install --frozen-lockfile
+      - name: Resolve Nx base and head
+        id: nx
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="origin/${{ github.base_ref }}"
+          else
+            base="${{ github.event.before }}"
+            if [ -z "$base" ] || ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
+              base="$(git rev-parse HEAD~1 2>/dev/null || git rev-parse HEAD)"
+            fi
+          fi
+          echo "base=$base" >> "$GITHUB_OUTPUT"
+          echo "head=HEAD" >> "$GITHUB_OUTPUT"
+      - name: Run affected tasks
+        run: pnpm exec nx affected -t lint test build --base="${{ steps.nx.outputs.base }}" --head="${{ steps.nx.outputs.head }}"
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.16.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter frontend run typecheck
+      - run: pnpm --filter frontend run lint
+      - run: pnpm --filter frontend run test:coverage
+      - run: pnpm --filter frontend run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-frontend
+          path: apps/frontend/coverage/
+
+  go:
+    name: Go ${{ matrix.go }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        go: ["1.26", "1.27"]
+    defaults:
+      run:
+        working-directory: apps/backend
+    env:
+      GOWORK: "off"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go }}
+          cache: false
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: go-${{ runner.os }}-${{ matrix.go }}-${{ hashFiles('apps/backend/go.mod', 'apps/backend/go.sum') }}
+          restore-keys: |
+            go-${{ runner.os }}-${{ matrix.go }}-
+      - name: gofmt
+        run: test -z "$(gofmt -l .)"
+      - name: go vet
+        run: go vet ./...
+      # Static analysis and vulnerability scanning use the primary Go release; the matrix is for tests.
+      - name: golangci-lint
+        if: matrix.go == '1.27'
+        uses: golangci/golangci-lint-action@v7
+        with:
+          version: ${{ env.GOLANGCI_LINT_VERSION }}
+          install-mode: goinstall
+          working-directory: apps/backend
+          args: --timeout=5m
+      - name: govulncheck
+        if: matrix.go == '1.27'
+        run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+      - name: test
+        run: |
+          if [ "${{ matrix.go }}" = "1.27" ]; then
+            go test -race -shuffle=on -count=1 -coverprofile=coverage.out ./...
+          else
+            go test -shuffle=on -count=1 ./...
+          fi
+      - uses: actions/upload-artifact@v4
+        if: matrix.go == '1.27'
+        with:
+          name: coverage-backend
+          path: apps/backend/coverage.out
+
+  # Go lint and vulnerability scanning live in the Go job; this job covers dependency advisories.
+  security:
+    name: Security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.16.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm audit --audit-level high
+
+  docker:
+    name: Docker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Check for Dockerfile
+        id: dockerfile
+        run: |
+          if [ -f Dockerfile ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Build image
+        if: steps.dockerfile.outputs.present == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          push: false
+          tags: calc:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Smoke test through nginx
+        if: steps.dockerfile.outputs.present == 'true'
+        run: |
+          docker run -d -p 8080:80 --name calc-ci calc:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:8080/healthz; then
+              break
+            fi
+            sleep 1
+          done
+          curl -fsS http://localhost:8080/healthz
+          docker stop calc-ci
+      - name: Skeleton notice
+        if: steps.dockerfile.outputs.present != 'true'
+        run: |
+          echo "Docker packaging lands in issue #22; skipping build and smoke."
+
+  codecov:
+    name: Coverage upload
+    needs: [go, frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: coverage-backend
+          path: apps/backend/
+      - uses: actions/download-artifact@v4
+        with:
+          name: coverage-frontend
+          path: coverage-frontend/
+      - uses: codecov/codecov-action@v5
+        with:
+          flags: backend
+          files: apps/backend/coverage.out
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+      - uses: codecov/codecov-action@v5
+        with:
+          flags: frontend
+          directory: coverage-frontend/
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+  CI:
+    name: CI
+    needs: [affected, frontend, go, security, docker, codecov]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every job to pass
+        run: |
+          failures=""
+          for job in $(echo '${{ toJSON(needs) }}' | jq -r 'keys[]'); do
+            result="$(echo '${{ toJSON(needs) }}' | jq -r --arg j "$job" '.[$j].result // "skipped"')"
+            if [ "$result" != "success" ]; then
+              echo "Job $job: $result"
+              failures="$failures $job"
+            fi
+          done
+          if [ -n "$failures" ]; then
+            echo "Failed jobs:$failures"
+            exit 1
+          fi
+          echo "All required jobs passed."

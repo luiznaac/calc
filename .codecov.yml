@@ -1,0 +1,49 @@
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+        informational: true
+      # Activates when #20 adds the domain and service packages.
+      backend-domain:
+        target: 90%
+        flags:
+          - backend
+        paths:
+          - apps/backend/internal/calculator/domain.go
+          - apps/backend/internal/calculator/service.go
+      frontend-src:
+        target: 80%
+        threshold: 0%
+        flags:
+          - frontend
+        paths:
+          - apps/frontend/src/
+    patch:
+      default:
+        target: auto
+        threshold: 0%
+
+fixes:
+  - "^agner/dev/calc/::apps/backend/"
+  - "^src/::apps/frontend/src/"
+
+codecov:
+  notify:
+    after_n_builds: 2
+
+flags:
+  backend:
+    paths:
+      - apps/backend/
+    carryforward: false
+  frontend:
+    paths:
+      - apps/frontend/
+    carryforward: false
+
+comment: false
+
+github_checks:
+  annotations: true
