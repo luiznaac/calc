@@ -208,7 +208,8 @@ jobs:
           docker stop calc-ci
       - name: Skeleton notice
         if: steps.dockerfile.outputs.present != 'true'
-        run: echo "Docker packaging lands in issue #22; skipping build and smoke."
+        run: |
+          echo "Docker packaging lands in issue #22; skipping build and smoke."
 
   codecov:
     name: Coverage upload
