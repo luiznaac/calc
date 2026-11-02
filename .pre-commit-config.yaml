@@ -1,0 +1,20 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: no-commit-to-branch
+        args: [--branch, master, --branch, main]
+  - repo: local
+    hooks:
+      - id: test-backend
+        name: test (go)
+        entry: sh -c 'cd apps/backend && GOWORK=off go test ./...'
+        language: system
+        files: '\.go$'
+        pass_filenames: false
+      - id: test-frontend
+        name: test (vitest)
+        entry: sh -c 'cd apps/frontend && corepack pnpm run test'
+        language: system
+        files: '\.(ts|tsx|js|jsx|mjs|cjs)$'
+        pass_filenames: false
