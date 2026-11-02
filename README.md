@@ -8,6 +8,16 @@ nginx + Go container image. One JSON endpoint exposes eight operations — `add`
 behavior on top. The image publishes only nginx on port 80; the Go process listens on loopback and
 is reached through nginx, so the UI and the API share one origin.
 
+## Overview
+
+The monorepo has two applications under `apps/` plus a packaging project. The Go backend is a flat
+hexagonal module: domain entities and typed errors in `domain.go`, use cases in `service.go`, and
+the consumer-owned port plus the HTTP and in-memory adapters in `adapters/`. The React frontend is
+a Vite + TypeScript SPA whose `useReducer` state machine owns the display, keypad and keyboard
+behavior, while `useCalculator` owns the request lifecycle. The `docker/` project supplies nginx
+and s6-overlay files to the root `Dockerfile`, which builds both applications into one image that
+starts Go before nginx and proxies `/api/*`, `/healthz` and unknown paths to `127.0.0.1:8080`.
+
 ## Quick start (Docker)
 
 Prerequisites: Docker. The multi-stage image installs Node, pnpm and Go inside the build, so no host
@@ -34,16 +44,6 @@ curl -sS -X POST http://localhost:8080/api/v1/calculate \
 Stop the container with `Ctrl+C` (or `docker stop <container>`). `calc` is the local image tag; the
 Nx `docker:build` target runs the same build and tags the image `calc:acceptance` for the acceptance
 runbook.
-
-## Overview
-
-The monorepo has two applications under `apps/` plus a packaging project. The Go backend is a flat
-hexagonal module: domain entities and typed errors in `domain.go`, use cases in `service.go`, and
-the consumer-owned port plus the HTTP and in-memory adapters in `adapters/`. The React frontend is
-a Vite + TypeScript SPA whose `useReducer` state machine owns the display, keypad and keyboard
-behavior, while `useCalculator` owns the request lifecycle. The `docker/` project supplies nginx
-and s6-overlay files to the root `Dockerfile`, which builds both applications into one image that
-starts Go before nginx and proxies `/api/*`, `/healthz` and unknown paths to `127.0.0.1:8080`.
 
 ## Local development
 
