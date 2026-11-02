@@ -381,20 +381,19 @@ never touches the issue tracker. The surface, run story and ledger location are 
 
 ### Skill descriptions
 
-Each row keeps the description to one line and points at the artifact that holds the skill's
-output; the full prompt text follows below for reference.
+Each row keeps the description to one line; the full prompt text follows below for reference.
 
-| Skill              | What it does                                                                                                            | Used for                                                                                            | Artifact                                                |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| `/wayfinder`       | Charts work too large for one session as a shared map of decision tickets, then resolves them until the route is clear. | Charting the effort and working the decision tickets.                                               | [issue #1](https://github.com/luiznaac/calc/issues/1)   |
-| `/grilling`        | A relentless interview that stress-tests a plan, decision, or idea before it is locked.                                 | Locking the domain, API, testing, docs, Docker, CI, percent, interactions and acceptance decisions. | [issue #6](https://github.com/luiznaac/calc/issues/6)   |
-| `/research`        | Investigates a question against primary sources and captures the findings as a Markdown note.                           | SOTA research on the monorepo, Go layout and React stack.                                           | [issue #2](https://github.com/luiznaac/calc/issues/2)   |
-| `/domain-modeling` | Builds and sharpens the project's domain model, glossary and ADRs.                                                      | Locking the operation set, typed error model and context vocabulary.                                | [issue #5](https://github.com/luiznaac/calc/issues/5)   |
-| `/codebase-design` | Supplies the deep-module vocabulary for module interfaces and seams.                                                    | The contextual-percent state machine, reducer seams and coding-standards assembly.                  | [issue #11](https://github.com/luiznaac/calc/issues/11) |
-| `/prototype`       | Builds a throwaway prototype to answer a design question.                                                               | The paper-ledger shell, keypad layout and geometry criterion.                                       | [issue #16](https://github.com/luiznaac/calc/issues/16) |
-| `/to-spec`         | Synthesizes the conversation into a published spec without interviewing.                                                | The final spec.                                                                                     | [issue #18](https://github.com/luiznaac/calc/issues/18) |
-| `/to-tickets`      | Breaks a spec into tracer-bullet tickets with explicit blocking edges.                                                  | The implementation tickets.                                                                         | [issue #19](https://github.com/luiznaac/calc/issues/19) |
-| `/implement`       | Implements a spec or tickets through TDD, review and the pre-PR acceptance gate.                                        | The implementation pull requests.                                                                   | [PR #25](https://github.com/luiznaac/calc/pull/25)      |
+| Skill              | What it does                                                                                                            | Used for                                                                                            |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `/wayfinder`       | Charts work too large for one session as a shared map of decision tickets, then resolves them until the route is clear. | Charting the effort and working the decision tickets.                                               |
+| `/grilling`        | A relentless interview that stress-tests a plan, decision, or idea before it is locked.                                 | Locking the domain, API, testing, docs, Docker, CI, percent, interactions and acceptance decisions. |
+| `/research`        | Investigates a question against primary sources and captures the findings as a Markdown note.                           | SOTA research on the monorepo, Go layout and React stack.                                           |
+| `/domain-modeling` | Builds and sharpens the project's domain model, glossary and ADRs.                                                      | Locking the operation set, typed error model and context vocabulary.                                |
+| `/codebase-design` | Supplies the deep-module vocabulary for module interfaces and seams.                                                    | The contextual-percent state machine, reducer seams and coding-standards assembly.                  |
+| `/prototype`       | Builds a throwaway prototype to answer a design question.                                                               | The paper-ledger shell, keypad layout and geometry criterion.                                       |
+| `/to-spec`         | Synthesizes the conversation into a published spec without interviewing.                                                | The final spec.                                                                                     |
+| `/to-tickets`      | Breaks a spec into tracer-bullet tickets with explicit blocking edges.                                                  | The implementation tickets.                                                                         |
+| `/implement`       | Implements a spec or tickets through TDD, review and the pre-PR acceptance gate.                                        | The implementation pull requests.                                                                   |
 
 ### Skill prompts
 
