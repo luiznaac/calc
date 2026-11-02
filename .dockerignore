@@ -1,0 +1,12 @@
+.git
+.nx
+.github
+node_modules
+**/node_modules
+apps/frontend/dist
+apps/frontend/coverage
+apps/frontend/playwright-report
+apps/frontend/test-results
+apps/backend/coverage.out
+acceptance
+*.log

@@ -185,41 +185,43 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
-      - name: Check for Dockerfile
-        id: dockerfile
-        run: |
-          if [ -f Dockerfile ]; then
-            echo "present=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "present=false" >> "$GITHUB_OUTPUT"
-          fi
-      - name: Build image
-        if: steps.dockerfile.outputs.present == 'true'
-        uses: docker/build-push-action@v6
+      - uses: pnpm/action-setup@v4
         with:
-          context: .
-          load: true
-          push: false
-          tags: calc:ci
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-      - name: Smoke test through nginx
-        if: steps.dockerfile.outputs.present == 'true'
+          version: 12.16.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - uses: docker/setup-buildx-action@v3
+      - run: pnpm install --frozen-lockfile
+      - name: Build image
+        run: pnpm exec nx run docker:docker:build:ci
+      - name: Run container and smoke the API through nginx
         run: |
           docker run -d -p 8080:80 --name calc-ci calc:ci
-          for i in $(seq 1 30); do
-            if curl -fsS http://localhost:8080/healthz; then
+          ready=false
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:8080/healthz >/dev/null; then
+              ready=true
               break
             fi
             sleep 1
           done
-          curl -fsS http://localhost:8080/healthz
-          docker stop calc-ci
-      - name: Skeleton notice
-        if: steps.dockerfile.outputs.present != 'true'
-        run: |
-          echo "Docker packaging lands in issue #22; skipping build and smoke."
+          if [ "$ready" != "true" ]; then
+            docker logs calc-ci
+            exit 1
+          fi
+          test "$(curl -fsS http://localhost:8080/healthz)" = "ok"
+          response="$(curl -fsS -X POST -H 'Content-Type: application/json' -d '{"operation":"add","operands":[1,2]}' http://localhost:8080/api/v1/calculate)"
+          test "$response" = '{"result":3}'
+      - name: Install Playwright browsers
+        run: pnpm --filter frontend exec playwright install --with-deps chromium
+      - name: Playwright smoke journeys against the built image
+        run: pnpm --filter frontend run test:e2e:docker
+      - name: Stop container
+        if: always()
+        run: docker rm -f calc-ci
 
   codecov:
     name: Coverage upload

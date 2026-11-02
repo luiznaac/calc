@@ -4,6 +4,7 @@ const PORT = 4173;
 
 export default defineConfig({
   testDir: "./e2e",
+  testIgnore: ["docker-smoke.spec.ts"],
   fullyParallel: true,
   forbidOnly: process.env.CI !== undefined,
   retries: process.env.CI !== undefined ? 2 : 0,

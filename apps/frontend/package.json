@@ -5,12 +5,13 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite",
-    "lint": "eslint . && prettier --check \"src/**/*.{ts,tsx,css}\" \"e2e/**/*.ts\" \"playwright.config.ts\"",
+    "lint": "eslint . && prettier --check \"src/**/*.{ts,tsx,css}\" \"e2e/**/*.ts\" \"playwright.config.ts\" \"playwright.docker.config.ts\"",
     "preview": "vite preview",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:e2e:docker": "playwright test -c playwright.docker.config.ts"
   },
   "dependencies": {
     "react": "19.3.1",

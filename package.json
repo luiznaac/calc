@@ -7,7 +7,9 @@
     "build": "nx run-many -t build",
     "graph": "nx graph",
     "lint": "nx run-many -t lint",
-    "test": "nx run-many -t test"
+    "test": "nx run-many -t test",
+    "acceptance": "node acceptance/run.mjs",
+    "test:acceptance": "node --test acceptance/run.test.mjs"
   },
   "devDependencies": {
     "@nx-go/nx-go": "24.0.0-beta.0",

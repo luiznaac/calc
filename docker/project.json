@@ -1,0 +1,24 @@
+{
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "name": "docker",
+  "root": "docker",
+  "projectType": "application",
+  "tags": ["type:app", "runtime:docker"],
+  "targets": {
+    "docker:build": {
+      "executor": "nx:run-commands",
+      "defaultConfiguration": "local",
+      "options": {
+        "cwd": "."
+      },
+      "configurations": {
+        "local": {
+          "command": "docker build -t calc:acceptance ."
+        },
+        "ci": {
+          "command": "docker buildx build --load --push=false --tag calc:ci --cache-from type=gha --cache-to type=gha,mode=max ."
+        }
+      }
+    }
+  }
+}

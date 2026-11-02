@@ -12,6 +12,16 @@
 
 ## Acceptance
 
-No self-served acceptance run or runbook exists yet. Acceptance gating starts with
-[Docker packaging and Docker smoke](https://github.com/luiznaac/calc/issues/22); the foundation is
-verified by the CI workflow. Do not add an acceptance manifest, job, or ledger artifact before #22.
+- **Surface kinds**: HTTP (health, success, every reachable API error class and the non-events
+  through nginx), Browser (the SPA, the eight transition rows, the 20 keypad geometry relations
+  at five viewports, and the vision intents), and the container/runtime surface (single nginx
+  port 80, `/healthz` and `/api/*` reached through nginx, no direct API port).
+- **Run story**: `pnpm acceptance` builds the image, boots it through
+  [`acceptance/runbook.md`](./acceptance/runbook.md), runs
+  [`acceptance/manifest.json`](./acceptance/manifest.json) with
+  [`acceptance/expectations.json`](./acceptance/expectations.json), and writes the ledger,
+  screenshots and trace under `$OPENCODE_SCRATCH_DIR/acceptance/<run-id>/`.
+- **Runbook**: [acceptance/runbook.md](./acceptance/runbook.md) — bootstrap-only, one service;
+  the image exposes only nginx on port 80.
+- Acceptance is agent-only and pre-PR. CI never runs the manifest and never publishes a ledger
+  artifact. Details: [acceptance/README.md](./acceptance/README.md).
