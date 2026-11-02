@@ -70,6 +70,7 @@ test("validateSidecar accepts known ids and the supported extension keys", () =>
     intents: {
       "row-result-equals": {
         reset: true,
+        presses: ["1", "+", "2", "="],
         requests: {
           count: 1,
           calls: [
@@ -81,6 +82,30 @@ test("validateSidecar accepts known ids and the supported extension keys", () =>
     },
   };
   assert.deepEqual(validateSidecar(sidecar, MANIFEST), sidecar);
+});
+
+test("validateSidecar rejects a presses value that is not a non-empty key array", () => {
+  for (const presses of ["1", [], ["1", ""], ["1", 2]]) {
+    assert.throws(
+      () =>
+        validateSidecar(
+          { expectations_version: 1, intents: { "row-result-equals": { presses } } },
+          MANIFEST,
+        ),
+      ConfigError,
+    );
+  }
+});
+
+test("validateSidecar rejects presses on a non-Browser intent", () => {
+  assert.throws(
+    () =>
+      validateSidecar(
+        { expectations_version: 1, intents: { "http-health": { presses: ["1"] } } },
+        MANIFEST,
+      ),
+    ConfigError,
+  );
 });
 
 test("validateSidecar rejects an unknown intent id", () => {

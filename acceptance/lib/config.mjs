@@ -5,6 +5,7 @@ const LOCATOR_KINDS = ["role", "label", "text", "testid", "css"];
 const ACTION_TYPES = ["navigate", "newPage", "click", "hover", "fill", "select", "press"];
 const SIDECAR_KEYS = [
   "reset",
+  "presses",
   "requests",
   "viewport",
   "geometry",
@@ -121,6 +122,13 @@ export function validateManifestShape(manifest) {
   return manifest;
 }
 
+function validatePresses(presses, label) {
+  if (!Array.isArray(presses) || presses.length === 0) {
+    throw new ConfigError(`${label} must be a non-empty array`);
+  }
+  presses.forEach((key, index) => requireString(key, `${label}[${index}]`));
+}
+
 function validateRequests(requests, label) {
   requireObject(requests, label);
   rejectUnknownKeys(requests, ["count", "calls"], label);
@@ -171,15 +179,22 @@ export function validateSidecar(sidecar, manifest) {
     throw new ConfigError("expectations.expectations_version must be 1");
   }
   requireObject(sidecar.intents, "expectations.intents");
-  const known = new Set(manifest.intents.map((intent) => intent.id));
+  const intentsById = new Map(manifest.intents.map((intent) => [intent.id, intent]));
   for (const [id, expectation] of Object.entries(sidecar.intents)) {
-    if (!known.has(id)) {
+    const intent = intentsById.get(id);
+    if (intent === undefined) {
       throw new ConfigError(`expectations has an unknown intent id "${id}"`);
     }
     requireObject(expectation, `expectations.intents["${id}"]`);
     rejectUnknownKeys(expectation, SIDECAR_KEYS, `expectations.intents["${id}"]`);
     if (expectation.reset !== undefined) {
       requireBoolean(expectation.reset, `expectations.intents["${id}"].reset`);
+    }
+    if (expectation.presses !== undefined) {
+      if (intent.surface !== "Browser") {
+        throw new ConfigError(`expectations.intents["${id}"].presses is Browser-only`);
+      }
+      validatePresses(expectation.presses, `expectations.intents["${id}"].presses`);
     }
     if (expectation.releaseHold !== undefined) {
       requireBoolean(expectation.releaseHold, `expectations.intents["${id}"].releaseHold`);

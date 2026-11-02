@@ -181,13 +181,37 @@
   flex-direction: column;
   gap: 4px;
   min-height: 76px;
+  max-height: 76px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rule) transparent;
   margin: 8px 0 0;
   padding: 0;
   list-style: none;
 }
 
+.tapeList:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.tapeList::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tapeList::-webkit-scrollbar-thumb {
+  background: var(--rule);
+}
+
+.tapeList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 .tapeRow {
   display: flex;
+  flex: none;
   justify-content: space-between;
   gap: 12px;
 }

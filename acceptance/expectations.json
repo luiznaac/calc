@@ -1196,6 +1196,50 @@
         "noScroll": true
       }
     },
+    "tape-cap-1280x900": {
+      "reset": true,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "presses": [
+        "9",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r"
+      ],
+      "geometry": {
+        "relations": [],
+        "noScroll": true
+      }
+    },
     "visual-percent-200-2": {
       "requests": {
         "count": 0

@@ -2498,6 +2498,18 @@
       }
     },
     {
+      "id": "tape-cap-1280x900",
+      "surface": "Browser",
+      "intent": "the filled tape keeps the last ten entries without scrolling the page at 1280x900",
+      "anchor": {
+        "by": "css",
+        "selector": "[data-testid=\"tape\"] > li"
+      },
+      "expect": {
+        "count": 10
+      }
+    },
+    {
       "id": "visual-percent-200-2",
       "surface": "Browser",
       "intent": "percent: digit 2 starts 200",
