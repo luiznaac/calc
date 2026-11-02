@@ -1,0 +1,11 @@
+node_modules/
+.nx/
+dist/
+coverage/
+go.work
+go.work.sum
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
