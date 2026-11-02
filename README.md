@@ -10,15 +10,14 @@ is reached through nginx, so the UI and the API share one origin.
 
 ## Quick start (Docker)
 
-Prerequisites: Node 22, pnpm 12 through Corepack, and Docker.
+Prerequisites: Docker. The multi-stage image installs Node, pnpm and Go inside the build, so no host
+toolchain is required.
 
 ```sh
 git clone https://github.com/luiznaac/calc.git
 cd calc
-corepack enable
-pnpm install
-pnpm exec nx run docker:docker:build
-docker run --rm -p 8080:80 calc:acceptance
+docker build -t calc .
+docker run --rm -p 8080:80 calc
 ```
 
 Open <http://localhost:8080>. The same origin serves the API, so no separate API port is published:
@@ -32,9 +31,9 @@ curl -sS -X POST http://localhost:8080/api/v1/calculate \
 # {"result":3}
 ```
 
-Stop the container with `Ctrl+C` (or `docker stop <container>`). `calc:acceptance` is the local tag
-produced by the `docker:build` target in the `docker` project; the acceptance runbook uses the
-same tag.
+Stop the container with `Ctrl+C` (or `docker stop <container>`). `calc` is the local image tag; the
+Nx `docker:build` target runs the same build and tags the image `calc:acceptance` for the acceptance
+runbook.
 
 ## Overview
 
